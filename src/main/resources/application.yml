@@ -1,2 +1,9 @@
 server:
   port: 8080
+  servlet:
+    context-path: /yi-translator
+
+
+document:
+  templateDir: templates
+  productDir: products
