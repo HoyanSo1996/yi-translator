@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小译-优化翻译</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div id="app">
+    <h1>小译-优化翻译</h1>
+
+    <div class="upload-container">
+        <input type="file" id="fileInput" />
+        <button onclick="uploadFile()">上传文件</button>
+    </div>
+
+    <div class="progress-container" id="progressContainer" style="display: none;">
+        <p class="progress-text">处理进度: <span id="progressText">0</span>%</p>
+        <div class="progress-bar" id="progressBar" style="width: 0"></div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    function uploadFile() {
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert('请先选择文件！');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // 显示进度条
+        document.getElementById('progressContainer').style.display = 'block';
+
+        const xhr = new XMLHttpRequest();
+
+        // 进度监听
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                const percentComplete = Math.round((e.loaded / e.total) * 100);
+                updateProgress(percentComplete);
+            }
+        }, false);
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    const blob = xhr.response;
+                    const downloadUrl = window.URL.createObjectURL(blob);
+
+                    // 动态创建 <a> 标签并触发点击
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = downloadUrl;
+                    a.download = 'translated_' + file.name; // 设置下载文件名
+                    document.body.appendChild(a);
+                    a.click();
+                    // 清理资源
+                    window.URL.revokeObjectURL(downloadUrl);
+                    document.body.removeChild(a);
+
+                    updateProgress(100);
+                } else {
+                    console.error('上传失败:', xhr.statusText);
+                    alert('上传失败，请稍后重试！');
+                }
+            }
+        };
+
+        xhr.open('POST', /*[[@{/document/translate}]]*/ '', true);
+        xhr.responseType = 'blob';
+        xhr.send(formData);
+    }
+
+    function updateProgress(percent) {
+        document.getElementById('progressText').textContent = percent;
+        document.getElementById('progressBar').style.width = percent + '%';
+    }
+</script>
+</body>
+</html>

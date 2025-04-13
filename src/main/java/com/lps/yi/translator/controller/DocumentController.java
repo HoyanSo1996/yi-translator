@@ -31,7 +31,7 @@ public class DocumentController {
         ByteArrayOutputStream byteArrayOutputStream = docxService.translate(file);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", file.getOriginalFilename()))
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentType(MediaType.valueOf("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
                 .body(byteArrayOutputStream.toByteArray());
     }
 
